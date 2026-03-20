@@ -4,18 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Production Control Panel</title>
-  <link rel="stylesheet" href="/static/styles_v2_2.css" />
+  <link rel="stylesheet" href="/static/styles_v3_0.css" />
 </head>
 <body class="control-body">
   <div class="control-shell">
     <div class="topbar">
       <div>
         <h1>Production Control Panel</h1>
-        <p class="sub">Broadcast Graphics V2.2</p>
+        <p class="sub">Broadcast Graphics V3.0</p>
       </div>
-      <div class="obs-url">
-        <span>OBS Browser Source</span>
-        <code>/graphics/live</code>
+      <div class="obs-url-group">
+        <div class="obs-url"><span>Bottom Bar Source</span><code>/graphics/bottom-bar</code></div>
+        <div class="obs-url"><span>Full Screen Source</span><code>/graphics/full-screen</code></div>
+        <div class="obs-url"><span>Head to Head Source</span><code>/graphics/head-to-head</code></div>
       </div>
     </div>
 
@@ -73,18 +74,24 @@
       </section>
 
       <section class="panel">
-        <h2>Expected Sheet Format</h2>
+        <h2>V3 Notes</h2>
         <ol class="notes">
+          <li>Use 3 separate OBS browser sources, one for each graphic type.</li>
+          <li>Each source stays transparent unless its matching template is live.</li>
           <li>Headers must be in <strong>row 4</strong>.</li>
           <li>Only columns <strong>A:H</strong> are read.</li>
-          <li>Required headers are <code>Player Image</code>, <code>Team Image</code>, <code>Username</code>, <code>Team</code>, <code>GP</code>, <code>G</code>, <code>A</code>, <code>PTS</code>.</li>
-          <li>Data starts on row 5.</li>
-          <li>The app ignores rows 1-3.</li>
+          <li>Team color backgrounds are controlled in <code>team_colors.py</code>.</li>
         </ol>
 
         <div class="live-box">
           <div class="label">Current Live Version</div>
           <div id="liveVersion">0</div>
+        </div>
+
+        <div class="config-box">
+          <div class="label">Current Team Color Config</div>
+          <pre class="config-pre">{% for team, color in team_colors.items() %}{{ team }} = {{ color }}
+{% endfor %}DEFAULT = {{ default_color }}</pre>
         </div>
       </section>
     </div>
@@ -127,7 +134,6 @@
     async function setLive(e) {
       e.preventDefault();
       statusBox.textContent = "Updating live graphic...";
-
       const formData = new FormData(form);
       const res = await fetch("/api/set-live", { method: "POST", body: formData });
       const data = await res.json();
@@ -202,11 +208,7 @@
       }
 
       input.addEventListener("input", loadSuggestions);
-      input.addEventListener("blur", () => {
-        setTimeout(() => {
-          box.style.display = "none";
-        }, 150);
-      });
+      input.addEventListener("blur", () => setTimeout(() => { box.style.display = "none"; }, 150));
       input.addEventListener("focus", loadSuggestions);
       positionType.addEventListener("change", () => { box.style.display = "none"; input.value = ""; });
       seasonType.addEventListener("change", () => { box.style.display = "none"; input.value = ""; });

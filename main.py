@@ -11,7 +11,9 @@ from typing import List, Dict, Any
 import gspread
 from google.oauth2.service_account import Credentials
 
-app = FastAPI(title="Broadcast Graphics V2.2")
+from team_colors import TEAM_COLORS, DEFAULT_TEAM_COLOR
+
+app = FastAPI(title="Broadcast Graphics V3.0")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -32,7 +34,19 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 
 def normalize(text: str) -> str:
-    return " ".join((text or "").replace("\u00A0", " ").strip().lower().split())
+    return " ".join((text or "").replace("\u00A0", " ").strip().upper().split())
+
+
+def safe_hex(value: str | None) -> str:
+    raw = (value or "").strip().lstrip("#").upper()
+    if len(raw) == 6 and all(c in "0123456789ABCDEF" for c in raw):
+        return raw
+    return DEFAULT_TEAM_COLOR
+
+
+def get_team_color(team_code: str | None) -> str:
+    team = normalize(team_code)
+    return safe_hex(TEAM_COLORS.get(team, DEFAULT_TEAM_COLOR))
 
 
 def get_gsheet_client():
@@ -72,8 +86,6 @@ def get_worksheet_name(position_type: str, season_type: str) -> str:
 
 def get_all_players(worksheet_name: str) -> List[Dict[str, Any]]:
     sheet = get_worksheet(worksheet_name)
-
-    # Read only columns A:H, starting with headers in row 4
     values = sheet.get("A4:H")
 
     if not values or len(values) < 2:
@@ -103,11 +115,8 @@ def get_all_players(worksheet_name: str) -> List[Dict[str, Any]]:
     for row in rows:
         padded = row + [""] * (len(expected_headers) - len(row))
         trimmed = padded[:len(expected_headers)]
-
-        # Skip fully blank rows
         if not any(str(cell).strip() for cell in trimmed):
             continue
-
         records.append(dict(zip(expected_headers, trimmed)))
 
     return records
@@ -157,33 +166,50 @@ def build_player_payload(player_name: str, worksheet_name: str):
     if not row:
         raise HTTPException(status_code=404, detail=f"Player not found in '{worksheet_name}': {player_name}")
 
+    team = row.get("Team", "")
     return {
         "player_name": row.get("Username"),
-        "team": row.get("Team"),
+        "team": team,
         "headshot_url": row.get("Player Image"),
         "team_logo_url": row.get("Team Image"),
+        "team_color": get_team_color(team),
         "stats": build_stats(row)
     }
 
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("control_v2_2.html", {"request": request})
+    return templates.TemplateResponse("control_v3_0.html", {"request": request, "default_color": DEFAULT_TEAM_COLOR, "team_colors": TEAM_COLORS})
 
 
 @app.get("/control", response_class=HTMLResponse)
 async def control_page(request: Request):
-    return templates.TemplateResponse("control_v2_2.html", {"request": request})
+    return templates.TemplateResponse("control_v3_0.html", {"request": request, "default_color": DEFAULT_TEAM_COLOR, "team_colors": TEAM_COLORS})
 
 
-@app.get("/graphics/live", response_class=HTMLResponse)
-async def graphics_page(request: Request):
-    return templates.TemplateResponse("graphics_live_v2_2.html", {"request": request})
+@app.get("/graphics/bottom-bar", response_class=HTMLResponse)
+async def graphics_bottom_bar(request: Request):
+    return templates.TemplateResponse("graphics_bottom_bar_v3_0.html", {"request": request})
+
+
+@app.get("/graphics/full-screen", response_class=HTMLResponse)
+async def graphics_full_screen(request: Request):
+    return templates.TemplateResponse("graphics_full_screen_v3_0.html", {"request": request})
+
+
+@app.get("/graphics/head-to-head", response_class=HTMLResponse)
+async def graphics_head_to_head(request: Request):
+    return templates.TemplateResponse("graphics_head_to_head_v3_0.html", {"request": request})
 
 
 @app.get("/api/live")
 async def get_live():
     return JSONResponse(LIVE_GRAPHIC_STATE)
+
+
+@app.get("/api/team-colors")
+async def get_team_colors():
+    return {"default_color": DEFAULT_TEAM_COLOR, "team_colors": TEAM_COLORS}
 
 
 @app.get("/api/players")

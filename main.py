@@ -154,10 +154,10 @@ def find_player(player_name: str, worksheet_name: str):
 
 def build_stats(row: dict):
     return [
-        {"label": "GP", "value": row.get("GP", "")},
-        {"label": "G", "value": row.get("G", "")},
-        {"label": "A", "value": row.get("A", "")},
-        {"label": "PTS", "value": row.get("PTS", "")}
+        {"label": "Games Played", "value": row.get("GP", "")},
+        {"label": "Goals", "value": row.get("G", "")},
+        {"label": "Assists", "value": row.get("A", "")},
+        {"label": "Points", "value": row.get("PTS", "")}
     ]
 
 

@@ -1,36 +1,27 @@
-# Broadcast Graphics V2.1
+# Broadcast Graphics V2.2
 
-This version reads from four worksheet tabs based on the Production Control choices:
+This version uses these exact headers in row 4:
 
+- Player Image
+- Team Image
+- Username
+- Team
+- GP
+- G
+- A
+- PTS
+
+## Important
+- The app reads only columns A:H
+- The app reads headers from row 4
+- Data starts on row 5
+- Rows 1-3 are ignored
+
+## Worksheet mapping
 - Skater + Regular -> `Skater Regular Season`
 - Skater + Playoffs -> `Skater Playoffs`
 - Goalie + Regular -> `Goalie Regular Season`
 - Goalie + Playoffs -> `Goalie Playoffs`
-
-## Required headers for EVERY tab
-Use these exact row-1 headers:
-
-- Player Image
-- Team Image
-- Player Name
-- Team
-- Games Played
-- Goals
-- Assist
-- PTS
-
-## What you need to put in the code
-Nothing if your tab names and headers match exactly.
-
-## What must exist in Google Sheets
-Create these tabs:
-- Skater Regular Season
-- Skater Playoffs
-- Goalie Regular Season
-- Goalie Playoffs
-
-If you only have `Skater Regular Season` right now, that mode will work immediately.
-The other three modes will work once those tabs exist.
 
 ## Render
 Build Command:

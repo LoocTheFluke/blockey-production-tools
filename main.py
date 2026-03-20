@@ -11,7 +11,7 @@ from typing import List, Dict, Any
 import gspread
 from google.oauth2.service_account import Credentials
 
-app = FastAPI(title="Broadcast Graphics V2.1")
+app = FastAPI(title="Broadcast Graphics V2.2")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -32,7 +32,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 
 def normalize(text: str) -> str:
-    return (text or "").strip().lower()
+    return " ".join((text or "").replace("\u00A0", " ").strip().lower().split())
 
 
 def get_gsheet_client():
@@ -73,7 +73,7 @@ def get_worksheet_name(position_type: str, season_type: str) -> str:
 def get_all_players(worksheet_name: str) -> List[Dict[str, Any]]:
     sheet = get_worksheet(worksheet_name)
 
-    # Read only A:H, starting from row 4 headers
+    # Read only columns A:H, starting with headers in row 4
     values = sheet.get("A4:H")
 
     if not values or len(values) < 2:
@@ -113,10 +113,32 @@ def get_all_players(worksheet_name: str) -> List[Dict[str, Any]]:
     return records
 
 
+def search_players(query_text: str = "", position_type: str | None = None, season_type: str | None = None, limit: int = 10):
+    worksheet_name = get_worksheet_name(position_type or "Skater", season_type or "Regular")
+    records = get_all_players(worksheet_name)
+    q = normalize(query_text)
+
+    matches = []
+    for row in records:
+        name = row.get("Username", "")
+        team = row.get("Team", "")
+        if not q or q in normalize(name):
+            matches.append({
+                "player_name": name,
+                "team": team,
+                "worksheet_name": worksheet_name
+            })
+
+    matches.sort(key=lambda x: x["player_name"])
+    return matches[:limit]
+
+
 def find_player(player_name: str, worksheet_name: str):
     records = get_all_players(worksheet_name)
+    target = normalize(player_name)
+
     for row in records:
-        if normalize(row.get("Username")) == normalize(player_name):
+        if normalize(row.get("Username")) == target:
             return row
     return None
 
@@ -144,48 +166,19 @@ def build_player_payload(player_name: str, worksheet_name: str):
     }
 
 
-def search_players(query_text: str = "", position_type: str | None = None, season_type: str | None = None, limit: int = 10):
-    worksheet_name = get_worksheet_name(position_type or "Skater", season_type or "Regular")
-    records = get_all_players(worksheet_name)
-    q = normalize(query_text)
-
-    matches = []
-    for row in records:
-        name = row.get("Username", "")
-        team = row.get("Team", "")
-        if not q or q in normalize(name):
-            matches.append({
-                "player_name": name,
-                "team": team,
-                "worksheet_name": worksheet_name
-            })
-
-    matches.sort(key=lambda x: x["player_name"])
-    return matches[:limit]
-
-
-def find_player(player_name: str, worksheet_name: str):
-    records = get_all_players(worksheet_name)
-    for row in records:
-        if normalize(row.get("Player Name")) == normalize(player_name):
-            return row
-    return None
-
-
-
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("control_v2_1.html", {"request": request})
+    return templates.TemplateResponse("control_v2_2.html", {"request": request})
 
 
 @app.get("/control", response_class=HTMLResponse)
 async def control_page(request: Request):
-    return templates.TemplateResponse("control_v2_1.html", {"request": request})
+    return templates.TemplateResponse("control_v2_2.html", {"request": request})
 
 
 @app.get("/graphics/live", response_class=HTMLResponse)
 async def graphics_page(request: Request):
-    return templates.TemplateResponse("graphics_live_v2_1.html", {"request": request})
+    return templates.TemplateResponse("graphics_live_v2_2.html", {"request": request})
 
 
 @app.get("/api/live")

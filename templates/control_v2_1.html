@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Production Control Panel</title>
+  <link rel="stylesheet" href="/static/styles_v2_1.css" />
+</head>
+<body class="control-body">
+  <div class="control-shell">
+    <div class="topbar">
+      <div>
+        <h1>Production Control Panel</h1>
+        <p class="sub">Broadcast Graphics V2.1</p>
+      </div>
+      <div class="obs-url">
+        <span>OBS Browser Source</span>
+        <code>/graphics/live</code>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Graphic Setup</h2>
+
+        <form id="liveForm" class="control-form" autocomplete="off">
+          <label>Graphics Style</label>
+          <select name="graphic_style" id="graphic_style">
+            <option>Bottom Bar</option>
+            <option>Full Screen</option>
+            <option>Head to Head</option>
+          </select>
+
+          <label>Position Type</label>
+          <select name="position_type" id="position_type">
+            <option>Skater</option>
+            <option>Goalie</option>
+          </select>
+
+          <label>Season Type</label>
+          <select name="season_type" id="season_type">
+            <option>Regular</option>
+            <option>Playoffs</option>
+          </select>
+
+          <div class="sheet-preview-wrap">
+            <label>Current Source Tab</label>
+            <div id="sheetPreview" class="sheet-preview">Skater Regular Season</div>
+          </div>
+
+          <label>Player Name</label>
+          <div class="autocomplete">
+            <input type="text" name="player_name_1" id="player_name_1" placeholder="Start typing player name..." required />
+            <div class="suggestions" id="suggestions_1"></div>
+          </div>
+
+          <div id="player2Wrap" class="hidden">
+            <label>Player Name 2</label>
+            <div class="autocomplete">
+              <input type="text" name="player_name_2" id="player_name_2" placeholder="Start typing second player..." />
+              <div class="suggestions" id="suggestions_2"></div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" class="primary">TAKE LIVE</button>
+            <button type="button" id="clearBtn" class="secondary">CLEAR</button>
+            <button type="button" id="refreshSheetBtn" class="secondary">REFRESH SHEET</button>
+          </div>
+        </form>
+
+        <div id="status" class="status"></div>
+      </section>
+
+      <section class="panel">
+        <h2>How This Version Works</h2>
+        <ol class="notes">
+          <li><strong>Skater + Regular</strong> reads tab <code>Skater Regular Season</code></li>
+          <li><strong>Skater + Playoffs</strong> reads tab <code>Skater Playoffs</code></li>
+          <li><strong>Goalie + Regular</strong> reads tab <code>Goalie Regular Season</code></li>
+          <li><strong>Goalie + Playoffs</strong> reads tab <code>Goalie Playoffs</code></li>
+          <li>Each tab should use the same 8 headers in row 1.</li>
+        </ol>
+
+        <div class="live-box">
+          <div class="label">Current Live Version</div>
+          <div id="liveVersion">0</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("liveForm");
+    const statusBox = document.getElementById("status");
+    const graphicStyle = document.getElementById("graphic_style");
+    const positionType = document.getElementById("position_type");
+    const seasonType = document.getElementById("season_type");
+    const player2Wrap = document.getElementById("player2Wrap");
+    const liveVersion = document.getElementById("liveVersion");
+    const sheetPreview = document.getElementById("sheetPreview");
+
+    function getWorksheetName(position, season) {
+      if (position === "Skater" && season === "Regular") return "Skater Regular Season";
+      if (position === "Skater" && season === "Playoffs") return "Skater Playoffs";
+      if (position === "Goalie" && season === "Regular") return "Goalie Regular Season";
+      if (position === "Goalie" && season === "Playoffs") return "Goalie Playoffs";
+      return "Skater Regular Season";
+    }
+
+    function syncUI() {
+      player2Wrap.classList.toggle("hidden", graphicStyle.value !== "Head to Head");
+      sheetPreview.textContent = getWorksheetName(positionType.value, seasonType.value);
+    }
+
+    graphicStyle.addEventListener("change", syncUI);
+    positionType.addEventListener("change", syncUI);
+    seasonType.addEventListener("change", syncUI);
+    syncUI();
+
+    async function getLiveVersion() {
+      const res = await fetch("/api/live");
+      const data = await res.json();
+      liveVersion.textContent = data.version ?? 0;
+    }
+
+    async function setLive(e) {
+      e.preventDefault();
+      statusBox.textContent = "Updating live graphic...";
+
+      const formData = new FormData(form);
+      const res = await fetch("/api/set-live", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (res.ok) {
+        statusBox.textContent = `Live graphic updated from ${data.live_state.worksheet_name}.`;
+        liveVersion.textContent = data.live_state.version;
+      } else {
+        statusBox.textContent = data.detail || "Error updating live graphic.";
+      }
+    }
+
+    async function clearGraphic() {
+      const res = await fetch("/api/clear", { method: "POST" });
+      const data = await res.json();
+      statusBox.textContent = res.ok ? "Graphic cleared." : (data.detail || "Error clearing graphic.");
+      await getLiveVersion();
+    }
+
+    async function refreshSheet() {
+      statusBox.textContent = "Refreshing Google Sheet cache...";
+      const res = await fetch("/api/refresh-sheet", { method: "POST" });
+      const data = await res.json();
+      statusBox.textContent = res.ok ? "Google Sheet cache refreshed." : (data.detail || "Error refreshing sheet.");
+    }
+
+    form.addEventListener("submit", setLive);
+    document.getElementById("clearBtn").addEventListener("click", clearGraphic);
+    document.getElementById("refreshSheetBtn").addEventListener("click", refreshSheet);
+
+    function attachAutocomplete(inputId, suggestionsId) {
+      const input = document.getElementById(inputId);
+      const box = document.getElementById(suggestionsId);
+
+      async function loadSuggestions() {
+        const q = input.value.trim();
+        const pos = positionType.value;
+        const season = seasonType.value;
+
+        if (!q) {
+          box.innerHTML = "";
+          box.style.display = "none";
+          return;
+        }
+
+        const res = await fetch(`/api/players?q=${encodeURIComponent(q)}&position_type=${encodeURIComponent(pos)}&season_type=${encodeURIComponent(season)}&limit=8`);
+        const data = await res.json();
+        const results = data.results || [];
+
+        if (!results.length) {
+          box.innerHTML = "";
+          box.style.display = "none";
+          return;
+        }
+
+        box.innerHTML = results.map(item => `
+          <button type="button" class="suggestion-item" data-name="${item.player_name}">
+            <strong>${item.player_name}</strong>
+            <span>${item.team} • ${item.worksheet_name}</span>
+          </button>
+        `).join("");
+
+        box.style.display = "block";
+
+        box.querySelectorAll(".suggestion-item").forEach(btn => {
+          btn.addEventListener("click", () => {
+            input.value = btn.dataset.name;
+            box.innerHTML = "";
+            box.style.display = "none";
+          });
+        });
+      }
+
+      input.addEventListener("input", loadSuggestions);
+      input.addEventListener("blur", () => {
+        setTimeout(() => {
+          box.style.display = "none";
+        }, 150);
+      });
+      input.addEventListener("focus", loadSuggestions);
+      positionType.addEventListener("change", () => { box.style.display = "none"; input.value = ""; });
+      seasonType.addEventListener("change", () => { box.style.display = "none"; input.value = ""; });
+    }
+
+    attachAutocomplete("player_name_1", "suggestions_1");
+    attachAutocomplete("player_name_2", "suggestions_2");
+    getLiveVersion();
+  </script>
+</body>
+</html>

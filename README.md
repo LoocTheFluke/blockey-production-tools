@@ -1,52 +1,48 @@
-# Broadcast Graphics MVP (FastAPI + Render + Google Sheets)
+# Broadcast Graphics V2.1
 
-## What this does
-- Production opens `/control`
-- Selects:
-  - Graphics Style (Bottom Bar | Full Screen | Head to Head)
-  - Position Type (Skater | Goalie)
-  - Season Type (Regular | Playoffs)
-  - Player Name (1 or 2 for Head to Head)
-- App reads player stats from Google Sheets
-- OBS uses `/graphics/live` as Browser Source
+This version reads from four worksheet tabs based on the Production Control choices:
 
-## Render setup
-Build command:
+- Skater + Regular -> `Skater Regular Season`
+- Skater + Playoffs -> `Skater Playoffs`
+- Goalie + Regular -> `Goalie Regular Season`
+- Goalie + Playoffs -> `Goalie Playoffs`
+
+## Required headers for EVERY tab
+Use these exact row-1 headers:
+
+- Player Image
+- Team Image
+- Player Name
+- Team
+- Games Played
+- Goals
+- Assist
+- PTS
+
+## What you need to put in the code
+Nothing if your tab names and headers match exactly.
+
+## What must exist in Google Sheets
+Create these tabs:
+- Skater Regular Season
+- Skater Playoffs
+- Goalie Regular Season
+- Goalie Playoffs
+
+If you only have `Skater Regular Season` right now, that mode will work immediately.
+The other three modes will work once those tabs exist.
+
+## Render
+Build Command:
 pip install -r requirements.txt
 
-Start command:
+Start Command:
 uvicorn main:app --host 0.0.0.0 --port $PORT
 
 ## Environment Variables
 - GOOGLE_SHEETS_ID
 - GOOGLE_SERVICE_ACCOUNT_JSON
 
-## Required Google Sheet tab
-Worksheet name must be: players
-
-## Suggested columns
-player_name
-team
-position_type
-headshot_url
-team_logo_url
-regular_skater_gp
-regular_skater_g
-regular_skater_a
-regular_skater_pts
-regular_skater_pim
-playoffs_skater_gp
-playoffs_skater_g
-playoffs_skater_a
-playoffs_skater_pts
-playoffs_skater_pim
-regular_goalie_gp
-regular_goalie_w
-regular_goalie_gaa
-regular_goalie_sv_pct
-regular_goalie_so
-playoffs_goalie_gp
-playoffs_goalie_w
-playoffs_goalie_gaa
-playoffs_goalie_sv_pct
-playoffs_goalie_so
+## Main URLs
+- Control: `/control`
+- OBS Browser Source: `/graphics/live`

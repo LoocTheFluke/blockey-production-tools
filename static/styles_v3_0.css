@@ -272,7 +272,7 @@ button {
   align-items: end;
   justify-content: center;
   padding: 20px 26px 20px;
-  background: transparent;
+  background: transparent !important;
 }
 
 .full-screen-shell {
@@ -280,17 +280,17 @@ button {
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background: transparent;
+  background: transparent !important;
 }
 
 .single-layout, .h2h-side {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--team-color) 26%, #0f172a), #0f172a 72%);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(12, 18, 30, 0.58);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 28px;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.35);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+  backdrop-filter: blur(8px);
 }
 
 .bottom-layout {
@@ -315,10 +315,13 @@ button {
 .team-accent {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--team-color) 70%, transparent), transparent 55%);
+  background: linear-gradient(
+    90deg,
+    var(--team-color) 0%,
+    rgba(0,0,0,0) 52%
+  );
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.22;
 }
 
 .brand-col {

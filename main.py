@@ -72,7 +72,76 @@ def get_worksheet_name(position_type: str, season_type: str) -> str:
 
 def get_all_players(worksheet_name: str) -> List[Dict[str, Any]]:
     sheet = get_worksheet(worksheet_name)
-    return sheet.get_all_records()
+
+    # Read only A:H, starting from row 4 headers
+    values = sheet.get("A4:H")
+
+    if not values or len(values) < 2:
+        return []
+
+    headers = values[0]
+    rows = values[1:]
+
+    expected_headers = [
+        "Player Image",
+        "Team Image",
+        "Username",
+        "Team",
+        "GP",
+        "G",
+        "A",
+        "PTS",
+    ]
+
+    if headers != expected_headers:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Header row mismatch in '{worksheet_name}'. Found: {headers}"
+        )
+
+    records = []
+    for row in rows:
+        padded = row + [""] * (len(expected_headers) - len(row))
+        trimmed = padded[:len(expected_headers)]
+
+        # Skip fully blank rows
+        if not any(str(cell).strip() for cell in trimmed):
+            continue
+
+        records.append(dict(zip(expected_headers, trimmed)))
+
+    return records
+
+
+def find_player(player_name: str, worksheet_name: str):
+    records = get_all_players(worksheet_name)
+    for row in records:
+        if normalize(row.get("Username")) == normalize(player_name):
+            return row
+    return None
+
+
+def build_stats(row: dict):
+    return [
+        {"label": "GP", "value": row.get("GP", "")},
+        {"label": "G", "value": row.get("G", "")},
+        {"label": "A", "value": row.get("A", "")},
+        {"label": "PTS", "value": row.get("PTS", "")}
+    ]
+
+
+def build_player_payload(player_name: str, worksheet_name: str):
+    row = find_player(player_name, worksheet_name)
+    if not row:
+        raise HTTPException(status_code=404, detail=f"Player not found in '{worksheet_name}': {player_name}")
+
+    return {
+        "player_name": row.get("Username"),
+        "team": row.get("Team"),
+        "headshot_url": row.get("Player Image"),
+        "team_logo_url": row.get("Team Image"),
+        "stats": build_stats(row)
+    }
 
 
 def search_players(query_text: str = "", position_type: str | None = None, season_type: str | None = None, limit: int = 10):
@@ -82,7 +151,7 @@ def search_players(query_text: str = "", position_type: str | None = None, seaso
 
     matches = []
     for row in records:
-        name = row.get("Player Name", "")
+        name = row.get("Username", "")
         team = row.get("Team", "")
         if not q or q in normalize(name):
             matches.append({
@@ -102,28 +171,6 @@ def find_player(player_name: str, worksheet_name: str):
             return row
     return None
 
-
-def build_stats(row: dict):
-    return [
-        {"label": "GP", "value": row.get("Games Played", "")},
-        {"label": "G", "value": row.get("Goals", "")},
-        {"label": "A", "value": row.get("Assist", "")},
-        {"label": "PTS", "value": row.get("PTS", "")}
-    ]
-
-
-def build_player_payload(player_name: str, worksheet_name: str):
-    row = find_player(player_name, worksheet_name)
-    if not row:
-        raise HTTPException(status_code=404, detail=f"Player not found in '{worksheet_name}': {player_name}")
-
-    return {
-        "player_name": row.get("Player Name"),
-        "team": row.get("Team"),
-        "headshot_url": row.get("Player Image"),
-        "team_logo_url": row.get("Team Image"),
-        "stats": build_stats(row)
-    }
 
 
 @app.get("/", response_class=HTMLResponse)

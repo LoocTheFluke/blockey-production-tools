@@ -341,7 +341,8 @@ button {
   background: linear-gradient(
     90deg,
     var(--team-color) 0%,
-    rgba(0,0,0,0) 42%
+    color-mix(in srgb, var(--team-color) 35%, #0b1220) 45%,
+    color-mix(in srgb, var(--team-color) 18%, #0b1220) 100%
   );
   opacity: 0.95;
 }

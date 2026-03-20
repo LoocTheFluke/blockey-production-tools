@@ -296,12 +296,10 @@ button {
 .h2h-side {
   position: relative;
   overflow: hidden;
-  background: rgba(7, 12, 20, 0.42);
-  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(7, 12, 20, 0.26);
+  border: 1px solid rgba(255,255,255,0.16);
   border-radius: 28px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.20);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
 }
 
 .single-layout::before,
@@ -482,7 +480,7 @@ button {
 }
 
 .stat-card {
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 18px;
   padding: 16px 18px;
@@ -490,8 +488,6 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 .stat-label {

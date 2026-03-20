@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Graphic</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+</head>
+<body class="graphics-body">
+  {% set style = live.graphic_style %}
+  {% set players = live.players %}
+
+  {% if style == "Bottom Bar" and players|length >= 1 %}
+    <div class="bottom-bar">
+      <img class="logo" src="{{ players[0].team_logo_url }}" alt="">
+      <img class="headshot" src="{{ players[0].headshot_url }}" alt="">
+      <div class="player-info">
+        <div class="name">{{ players[0].player_name }}</div>
+        <div class="team">{{ players[0].team }}</div>
+      </div>
+      <div class="stats">
+        {% for k, v in players[0].stats.items() %}
+          <div class="stat-box"><span>{{ k }}</span><strong>{{ v }}</strong></div>
+        {% endfor %}
+      </div>
+    </div>
+
+  {% elif style == "Full Screen" and players|length >= 1 %}
+    <div class="full-screen">
+      <img class="logo big" src="{{ players[0].team_logo_url }}" alt="">
+      <img class="headshot large" src="{{ players[0].headshot_url }}" alt="">
+      <div class="full-name">{{ players[0].player_name }}</div>
+      <div class="full-team">{{ players[0].team }}</div>
+      <div class="full-stats">
+        {% for k, v in players[0].stats.items() %}
+          <div class="stat-card"><span>{{ k }}</span><strong>{{ v }}</strong></div>
+        {% endfor %}
+      </div>
+    </div>
+
+  {% elif style == "Head to Head" and players|length == 2 %}
+    <div class="head-to-head">
+      {% for p in players %}
+        <div class="h2h-player">
+          <img class="logo" src="{{ p.team_logo_url }}" alt="">
+          <img class="headshot large" src="{{ p.headshot_url }}" alt="">
+          <div class="name">{{ p.player_name }}</div>
+          <div class="team">{{ p.team }}</div>
+          <div class="stats">
+            {% for k, v in p.stats.items() %}
+              <div class="stat-box"><span>{{ k }}</span><strong>{{ v }}</strong></div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">NO GRAPHIC LIVE</div>
+  {% endif %}
+
+  <script>
+    setInterval(() => location.reload(), 2000);
+  </script>
+</body>
+</html>

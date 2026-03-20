@@ -340,12 +340,25 @@ button {
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 1;
   background: linear-gradient(
     90deg,
     var(--team-color) 0%,
     rgba(0,0,0,0) 42%
   );
+  opacity: 0.95;
+}
+
+.single-layout,
+.h2h-side {
+  position: relative;
+  overflow: hidden;
+  background: rgba(7, 12, 20, 0.42);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.20);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2;
 }
 
 .brand-col,
@@ -359,11 +372,28 @@ button {
 .stats-row,
 .stats-grid,
 .stat-card,
-.meta-pill,
 .versus-badge {
   position: relative;
   z-index: 3;
   opacity: 1;
+}
+
+.meta-pill {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  z-index: 4;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.50);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #eff6ff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .brand-col {

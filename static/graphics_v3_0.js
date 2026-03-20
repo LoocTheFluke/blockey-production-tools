@@ -29,10 +29,9 @@ function singlePlayerCard(player, mode, season, position) {
   const teamColor = colorValue(player.team_color);
 
   return `
-    <div class="${shellClass}" style="--team-color:${teamColor};">
-      <div class="team-accent"></div>
-      <div class="meta-pill">${season} • ${position}</div>
-      <div class="${cardClass}">
+    <div class="${shellClass}">
+      <div class="${cardClass}" style="--team-color:${teamColor};">
+        <div class="team-accent"></div>
         <div class="brand-col">
           ${logoBadge(player)}
           ${player.headshot_url ? `<img class="headshot" src="${player.headshot_url}" alt="">` : ""}
@@ -48,6 +47,7 @@ function singlePlayerCard(player, mode, season, position) {
           <div class="stats-row">${statCards(player.stats)}</div>
         </div>
       </div>
+      <div class="meta-pill">${season} • ${position}</div>
     </div>
   `;
 }

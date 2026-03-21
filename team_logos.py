@@ -1,7 +1,7 @@
-DEFAULT_TEAM_LOGO = "https://www.dropbox.com/scl/fo/cxai7puqzt91dnei2xd6a/AIdRLPkf3CPU24cqQgh3vfA/BHL/BHL.png?rlkey=kwdavf0hinhiikytyvzkor8oj&st=r3rs4g3b&dl=0"
+DEFAULT_TEAM_LOGO = "https://uc30f80ddc680d96080590dea7a5.previews.dropboxusercontent.com/p/thumb/AC95hNU9kUPnH6CJDq1T5Ps3LUho7czEHZ6788l-s56wQtVwWFdYAu5yKiqxfZQguMBODsLHYWqqJhtimGWVe8adn9eD6ZC-n6Wstc7tofTd3lVOp9Lk8hY4bILOXzpcnVSx1YfsRA3JuxsY25jFPlbGZ7YzN-xLy7MASB8B38Z-Min8HYJ6uShR8uKi2A4vC2ykn2_2JsOJGMevJ95obUZxPJ4SYTR5iocpvgDxTMq2O36i6ZD8Rna881hHvD29Z6suvoqSUGjiJUhdbLmurfTrqaHi1SerczMiTIrtr9CijTEpJerLYHw4tJxrSBtY3nMYFbzNVThI9VGSfaHm1e2sD7hrsIf1Y5UOI-PwYF9-eg/p.png"
 
 TEAM_LOGOS = {
     # Add or edit teams here
-    # "BOS": "https://example.com/bos_logo.png",
+    # "BOS": "https://uce41fbb9592fdac20b61af3dbce.previews.dropboxusercontent.com/p/thumb/AC_QPnVzHKNyEBc_ytsekc_vMkMgepNWl8HbvJ7tJAihE7VbuFi1gEUMTP4eg3V-JqI3VZ1x4z0Vjmiffg6mIoCOeyoYPWCELO0ti55KwvaHxHoC3bNIe5AkGxZbkXnN_ECSsOlC2FRvLvcSniLq7lk87qtm478vliVpXO7xe0Wj2B7evtA7IAhDDDv6jWBDyItNR9yJZEz1Lzs92E8rgg_fZOHFXi4Q82gnmjyGH7WOxym8mebg219atSJ_uph9ls3nL-qgfXW3pkdrn9nUUAS2Tpg9SLvh4jwYyxfQXvKhgwjo6kKT7Lnop-r7r8u3EvjYnn3GyinJ5fwW3Vf-e9y2h_Kf8ysIgNUMeDd29BTiFA/p.png",
     # "NYR": "https://example.com/nyr_logo.png",
 }

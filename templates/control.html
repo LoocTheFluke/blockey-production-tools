@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Production Control Panel</title>
+  <link rel="stylesheet" href="/static/css/control.css" />
+</head>
+<body class="control-body">
+  <div class="control-shell">
+    <div class="topbar">
+      <div>
+        <h1>Production Control Panel</h1>
+        <p class="sub">Broadcast Graphics Split Version</p>
+      </div>
+      <div class="obs-url-group">
+        <div class="obs-url"><span>Bottom Bar Source</span><code>/graphics/bottom-bar</code></div>
+        <div class="obs-url"><span>Full Screen Source</span><code>/graphics/full-screen</code></div>
+        <div class="obs-url"><span>Head to Head Source</span><code>/graphics/head-to-head</code></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Graphic Setup</h2>
+
+        <form id="liveForm" class="control-form" autocomplete="off">
+          <label>Graphics Style</label>
+          <select name="graphic_style" id="graphic_style">
+            <option>Bottom Bar</option>
+            <option>Full Screen</option>
+            <option>Head to Head</option>
+          </select>
+
+          <label>Position Type</label>
+          <select name="position_type" id="position_type">
+            <option>Skater</option>
+            <option>Goalie</option>
+          </select>
+
+          <label>Season Type</label>
+          <select name="season_type" id="season_type">
+            <option>Regular</option>
+            <option>Playoffs</option>
+          </select>
+
+          <div class="sheet-preview-wrap">
+            <label>Current Source Tab</label>
+            <div id="sheetPreview" class="sheet-preview">Skater Regular Season</div>
+          </div>
+
+          <label>Username</label>
+          <div class="autocomplete">
+            <input type="text" name="player_name_1" id="player_name_1" placeholder="Start typing username..." required />
+            <div class="suggestions" id="suggestions_1"></div>
+          </div>
+
+          <div id="player2Wrap" class="hidden">
+            <label>Username 2</label>
+            <div class="autocomplete">
+              <input type="text" name="player_name_2" id="player_name_2" placeholder="Start typing second username..." />
+              <div class="suggestions" id="suggestions_2"></div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" class="primary">TAKE LIVE</button>
+            <button type="button" id="clearBtn" class="secondary">CLEAR</button>
+            <button type="button" id="refreshSheetBtn" class="secondary">REFRESH SHEET</button>
+          </div>
+        </form>
+
+        <div id="status" class="status"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Notes</h2>
+        <ol class="notes">
+          <li>Use 3 separate OBS browser sources, one for each graphic type.</li>
+          <li>Each source stays transparent unless its matching template is live.</li>
+          <li>Headers must be in <strong>row 4</strong>.</li>
+          <li>Only columns <strong>A:H</strong> are read.</li>
+          <li>Team color backgrounds are controlled in <code>team_colors.py</code>.</li>
+        </ol>
+
+        <div class="live-box">
+          <div class="label">Current Live Graphic</div>
+          <div id="liveVersion">EMPTY</div>
+        </div>
+
+        <div class="config-box">
+          <div class="label">Current Team Color Config</div>
+          <pre class="config-pre">{% for team, color in team_colors.items() %}{{ team }} = {{ color }}
+{% endfor %}DEFAULT = {{ default_color }}</pre>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/js/control.js"></script>
+</body>
+</html>

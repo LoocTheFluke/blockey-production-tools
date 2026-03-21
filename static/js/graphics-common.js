@@ -24,18 +24,52 @@ function logoBadge(player) {
 }
 
 function singlePlayerCard(player, mode, season, position) {
-  const shellClass = mode === "Bottom Bar" ? "graphic bottom-bar-shell" : "graphic full-screen-shell";
-  const cardClass = mode === "Bottom Bar" ? "single-layout bottom-layout" : "single-layout full-layout";
+  const shellClass = mode === "Bottom Bar"
+    ? "graphic bottom-bar-shell"
+    : "graphic full-screen-shell";
+
   const teamColor = colorValue(player.team_color);
+
+  if (mode === "Bottom Bar") {
+    return `
+      <div class="${shellClass}">
+        <div class="single-layout bottom-layout image-plate-layout" style="--team-color:${teamColor};">
+          <img class="plate-base" src="/static/img/bottom_bar_plate.png" alt="">
+          <div class="plate-tint"></div>
+          <div class="plate-shade"></div>
+
+          <div class="brand-col">
+            ${logoBadge(player)}
+            ${player.headshot_url ? `<img class="headshot" src="${player.headshot_url}" alt="">` : ""}
+          </div>
+
+          <div class="content-col">
+            <div class="title-row">
+              <div>
+                <div class="player-name">${player.player_name || ""}</div>
+                <div class="team-name">${player.team || ""}</div>
+              </div>
+              ${player.team_logo_url ? `<img class="team-logo corner-logo" src="${player.team_logo_url}" alt="">` : ""}
+            </div>
+            <div class="stats-row">${statCards(player.stats)}</div>
+          </div>
+        </div>
+
+        <div class="meta-pill">${season} • ${position}</div>
+      </div>
+    `;
+  }
 
   return `
     <div class="${shellClass}">
-      <div class="${cardClass}" style="--team-color:${teamColor};">
+      <div class="single-layout full-layout" style="--team-color:${teamColor};">
         <div class="team-accent"></div>
+
         <div class="brand-col">
           ${logoBadge(player)}
           ${player.headshot_url ? `<img class="headshot" src="${player.headshot_url}" alt="">` : ""}
         </div>
+
         <div class="content-col">
           <div class="title-row">
             <div>
@@ -47,6 +81,7 @@ function singlePlayerCard(player, mode, season, position) {
           <div class="stats-row">${statCards(player.stats)}</div>
         </div>
       </div>
+
       <div class="meta-pill">${season} • ${position}</div>
     </div>
   `;
@@ -59,6 +94,7 @@ function headToHead(players, season, position) {
   return `
     <div class="graphic h2h-shell">
       <div class="meta-pill center-pill">${season} • ${position} • HEAD TO HEAD</div>
+
       <div class="h2h-layout">
         ${players.map((player, idx) => `
           <div class="h2h-side" style="--team-color:${idx === 0 ? leftColor : rightColor};">
@@ -71,6 +107,7 @@ function headToHead(players, season, position) {
           </div>
         `).join("")}
       </div>
+
       <div class="versus-badge">VS</div>
     </div>
   `;
@@ -97,7 +134,12 @@ function renderGraphic(data) {
     return;
   }
 
-  root.innerHTML = singlePlayerCard(data.players[0], data.graphic_style, data.season_type, data.position_type);
+  root.innerHTML = singlePlayerCard(
+    data.players[0],
+    data.graphic_style,
+    data.season_type,
+    data.position_type
+  );
 }
 
 async function pollLive() {

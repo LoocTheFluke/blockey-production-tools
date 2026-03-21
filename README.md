@@ -1,14 +1,25 @@
-# Broadcast Graphics V3.0
+# Broadcast Graphics Split Version
 
-This version uses 3 separate OBS browser sources:
+This version works the same as your previous setup, but the frontend assets are split up.
 
-- Bottom Bar -> `/graphics/bottom-bar`
-- Full Screen -> `/graphics/full-screen`
-- Head to Head -> `/graphics/head-to-head`
+## Structure
 
-Only the matching template renders on each source. The others stay transparent.
+- `templates/control.html`
+- `templates/graphics_bottom_bar.html`
+- `templates/graphics_full_screen.html`
+- `templates/graphics_head_to_head.html`
+
+- `static/css/control.css`
+- `static/css/graphics-base.css`
+- `static/css/bottom-bar.css`
+- `static/css/full-screen.css`
+- `static/css/head-to-head.css`
+
+- `static/js/control.js`
+- `static/js/graphics-common.js`
 
 ## Google Sheet format
+
 Headers must be in row 4.
 Only columns A:H are read.
 
@@ -22,39 +33,34 @@ Required headers:
 - A
 - PTS
 
-Data starts on row 5.
-
 ## Worksheet mapping
+
 - Skater + Regular -> `Skater Regular Season`
 - Skater + Playoffs -> `Skater Playoffs`
 - Goalie + Regular -> `Goalie Regular Season`
 - Goalie + Playoffs -> `Goalie Playoffs`
 
-## Team colors
-Edit `team_colors.py`
+## OBS Sources
 
-Example:
-TEAM_COLORS = {
-    "BOS": "228B22",
-    "NYR": "0038A8",
-}
+- `/graphics/bottom-bar`
+- `/graphics/full-screen`
+- `/graphics/head-to-head`
 
-DEFAULT_TEAM_COLOR = "3170DE"
+## Bottom bar plate image
 
-If a team is not found, the default color is used.
+Put your bottom bar plate PNG here:
+
+`static/img/bottom_bar_plate.png`
 
 ## Render
+
 Build Command:
-pip install -r requirements.txt
+`pip install -r requirements.txt`
 
 Start Command:
-uvicorn main:app --host 0.0.0.0 --port $PORT
+`uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 ## Environment Variables
-- GOOGLE_SHEETS_ID
-- GOOGLE_SERVICE_ACCOUNT_JSON
 
-## OBS suggestions
-- Bottom Bar source size: 1920 x 320
-- Full Screen source size: 1920 x 1080
-- Head to Head source size: 1920 x 1080
+- `GOOGLE_SHEETS_ID`
+- `GOOGLE_SERVICE_ACCOUNT_JSON`

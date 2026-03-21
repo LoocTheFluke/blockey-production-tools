@@ -1,0 +1,67 @@
+.bottom-layout {
+  width: 100%;
+  max-width: 1800px;
+  min-height: 240px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 22px;
+  padding: 20px 26px;
+}
+
+.image-plate-layout {
+  position: relative;
+  overflow: hidden;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.image-plate-layout::before {
+  display: none !important;
+}
+
+.plate-base {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.plate-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--team-color) 0%,
+    rgba(0,0,0,0.18) 45%,
+    rgba(0,0,0,0.42) 100%
+  );
+  opacity: 0.65;
+}
+
+.plate-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(10, 16, 28, 0.18);
+}
+
+.image-plate-layout .brand-col,
+.image-plate-layout .content-col,
+.image-plate-layout .logo-badge,
+.image-plate-layout .team-logo,
+.image-plate-layout .corner-logo,
+.image-plate-layout .headshot,
+.image-plate-layout .player-name,
+.image-plate-layout .team-name,
+.image-plate-layout .stats-row,
+.image-plate-layout .stat-card {
+  position: relative;
+  z-index: 3;
+}

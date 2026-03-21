@@ -1,0 +1,8 @@
+.full-layout {
+  width: min(1500px, 94vw);
+  min-height: 760px;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 28px;
+  padding: 34px 36px;
+}

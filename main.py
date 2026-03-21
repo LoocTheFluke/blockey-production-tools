@@ -13,7 +13,7 @@ from google.oauth2.service_account import Credentials
 
 from team_colors import TEAM_COLORS, DEFAULT_TEAM_COLOR
 
-app = FastAPI(title="Broadcast Graphics V3.0")
+app = FastAPI(title="Broadcast Graphics Split Version")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -27,7 +27,8 @@ LIVE_GRAPHIC_STATE = {
     "worksheet_name": DEFAULT_WORKSHEET_NAME,
     "players": [],
     "visible": False,
-    "version": 0
+    "version": 0,
+    "live_label": "EMPTY"
 }
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
@@ -154,10 +155,10 @@ def find_player(player_name: str, worksheet_name: str):
 
 def build_stats(row: dict):
     return [
-        {"label": "Games Played", "value": row.get("GP", "")},
-        {"label": "Goals", "value": row.get("G", "")},
-        {"label": "Assists", "value": row.get("A", "")},
-        {"label": "Points", "value": row.get("PTS", "")}
+        {"label": "GP", "value": row.get("GP", "")},
+        {"label": "G", "value": row.get("G", "")},
+        {"label": "A", "value": row.get("A", "")},
+        {"label": "PTS", "value": row.get("PTS", "")}
     ]
 
 
@@ -179,27 +180,27 @@ def build_player_payload(player_name: str, worksheet_name: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("control_v3_0.html", {"request": request, "default_color": DEFAULT_TEAM_COLOR, "team_colors": TEAM_COLORS})
+    return templates.TemplateResponse("control.html", {"request": request, "default_color": DEFAULT_TEAM_COLOR, "team_colors": TEAM_COLORS})
 
 
 @app.get("/control", response_class=HTMLResponse)
 async def control_page(request: Request):
-    return templates.TemplateResponse("control_v3_0.html", {"request": request, "default_color": DEFAULT_TEAM_COLOR, "team_colors": TEAM_COLORS})
+    return templates.TemplateResponse("control.html", {"request": request, "default_color": DEFAULT_TEAM_COLOR, "team_colors": TEAM_COLORS})
 
 
 @app.get("/graphics/bottom-bar", response_class=HTMLResponse)
 async def graphics_bottom_bar(request: Request):
-    return templates.TemplateResponse("graphics_bottom_bar_v3_0.html", {"request": request})
+    return templates.TemplateResponse("graphics_bottom_bar.html", {"request": request})
 
 
 @app.get("/graphics/full-screen", response_class=HTMLResponse)
 async def graphics_full_screen(request: Request):
-    return templates.TemplateResponse("graphics_full_screen_v3_0.html", {"request": request})
+    return templates.TemplateResponse("graphics_full_screen.html", {"request": request})
 
 
 @app.get("/graphics/head-to-head", response_class=HTMLResponse)
 async def graphics_head_to_head(request: Request):
-    return templates.TemplateResponse("graphics_head_to_head_v3_0.html", {"request": request})
+    return templates.TemplateResponse("graphics_head_to_head.html", {"request": request})
 
 
 @app.get("/api/live")
@@ -219,9 +220,7 @@ async def api_players(
     season_type: str = Query(default="Regular"),
     limit: int = Query(default=10)
 ):
-    return {
-        "results": search_players(q, position_type, season_type, limit)
-    }
+    return {"results": search_players(q, position_type, season_type, limit)}
 
 
 @app.post("/api/set-live")
@@ -233,13 +232,15 @@ async def set_live(
     player_name_2: str = Form("")
 ):
     worksheet_name = get_worksheet_name(position_type, season_type)
-
     players = [build_player_payload(player_name_1, worksheet_name)]
 
     if graphic_style == "Head to Head":
         if not player_name_2.strip():
             raise HTTPException(status_code=400, detail="Second player is required for Head to Head")
         players.append(build_player_payload(player_name_2, worksheet_name))
+        live_label = f"{players[0]['player_name']} • {players[1]['player_name']} • FACE TO FACE"
+    else:
+        live_label = f"{players[0]['player_name']} • {graphic_style.upper()}"
 
     LIVE_GRAPHIC_STATE["graphic_style"] = graphic_style
     LIVE_GRAPHIC_STATE["position_type"] = position_type
@@ -247,6 +248,7 @@ async def set_live(
     LIVE_GRAPHIC_STATE["worksheet_name"] = worksheet_name
     LIVE_GRAPHIC_STATE["players"] = players
     LIVE_GRAPHIC_STATE["visible"] = True
+    LIVE_GRAPHIC_STATE["live_label"] = live_label
     LIVE_GRAPHIC_STATE["version"] += 1
 
     return {"ok": True, "live_state": LIVE_GRAPHIC_STATE}
@@ -260,6 +262,7 @@ async def clear_live():
     LIVE_GRAPHIC_STATE["worksheet_name"] = DEFAULT_WORKSHEET_NAME
     LIVE_GRAPHIC_STATE["players"] = []
     LIVE_GRAPHIC_STATE["visible"] = False
+    LIVE_GRAPHIC_STATE["live_label"] = "EMPTY"
     LIVE_GRAPHIC_STATE["version"] += 1
     return {"ok": True}
 

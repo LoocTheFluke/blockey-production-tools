@@ -12,6 +12,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 from team_colors import TEAM_COLORS, DEFAULT_TEAM_COLOR
+from team_logos import TEAM_LOGOS, DEFAULT_TEAM_LOGO
 
 app = FastAPI(title="Broadcast Graphics Split Version")
 
@@ -48,6 +49,11 @@ def safe_hex(value: str | None) -> str:
 def get_team_color(team_code: str | None) -> str:
     team = normalize(team_code)
     return safe_hex(TEAM_COLORS.get(team, DEFAULT_TEAM_COLOR))
+
+
+def get_team_logo(team_code: str | None) -> str:
+    team = normalize(team_code)
+    return TEAM_LOGOS.get(team, DEFAULT_TEAM_LOGO)
 
 
 def get_gsheet_client():
@@ -87,38 +93,23 @@ def get_worksheet_name(position_type: str, season_type: str) -> str:
 
 def get_all_players(worksheet_name: str) -> List[Dict[str, Any]]:
     sheet = get_worksheet(worksheet_name)
-    values = sheet.get("A4:H")
+    values = sheet.get_all_values()
 
-    if not values or len(values) < 2:
+    if len(values) < 5:
         return []
 
-    headers = values[0]
-    rows = values[1:]
-
-    expected_headers = [
-        "Player Image",
-        "Team Image",
-        "Username",
-        "Team",
-        "GP",
-        "G",
-        "A",
-        "PTS",
-    ]
-
-    if headers != expected_headers:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Header row mismatch in '{worksheet_name}'. Found: {headers}"
-        )
+    headers = values[3]
+    rows = values[4:]
 
     records = []
     for row in rows:
-        padded = row + [""] * (len(expected_headers) - len(row))
-        trimmed = padded[:len(expected_headers)]
+        padded = row + [""] * (len(headers) - len(row))
+        trimmed = padded[:len(headers)]
+
         if not any(str(cell).strip() for cell in trimmed):
             continue
-        records.append(dict(zip(expected_headers, trimmed)))
+
+        records.append(dict(zip(headers, trimmed)))
 
     return records
 
@@ -153,16 +144,24 @@ def find_player(player_name: str, worksheet_name: str):
     return None
 
 
-def build_stats(row: dict):
+def build_stats(row: dict, position_type: str):
+    if position_type == "Goalie":
+        return [
+            {"label": "SV%", "value": row.get("SV%", "")},
+            {"label": "GAA", "value": row.get("GAA", "")},
+            {"label": "SF", "value": row.get("SF", "")},
+            {"label": "SO", "value": row.get("SO", "")},
+        ]
+
     return [
         {"label": "GP", "value": row.get("GP", "")},
         {"label": "G", "value": row.get("G", "")},
         {"label": "A", "value": row.get("A", "")},
-        {"label": "PTS", "value": row.get("PTS", "")}
+        {"label": "PTS", "value": row.get("PTS", "")},
     ]
 
 
-def build_player_payload(player_name: str, worksheet_name: str):
+def build_player_payload(player_name: str, worksheet_name: str, position_type: str):
     row = find_player(player_name, worksheet_name)
     if not row:
         raise HTTPException(status_code=404, detail=f"Player not found in '{worksheet_name}': {player_name}")
@@ -172,9 +171,9 @@ def build_player_payload(player_name: str, worksheet_name: str):
         "player_name": row.get("Username"),
         "team": team,
         "headshot_url": row.get("Player Image"),
-        "team_logo_url": row.get("Team Image"),
+        "team_logo_url": get_team_logo(team),
         "team_color": get_team_color(team),
-        "stats": build_stats(row)
+        "stats": build_stats(row, position_type)
     }
 
 
@@ -232,12 +231,12 @@ async def set_live(
     player_name_2: str = Form("")
 ):
     worksheet_name = get_worksheet_name(position_type, season_type)
-    players = [build_player_payload(player_name_1, worksheet_name)]
+    players = [build_player_payload(player_name_1, worksheet_name, position_type)]
 
     if graphic_style == "Head to Head":
         if not player_name_2.strip():
             raise HTTPException(status_code=400, detail="Second player is required for Head to Head")
-        players.append(build_player_payload(player_name_2, worksheet_name))
+        players.append(build_player_payload(player_name_2, worksheet_name, position_type))
         live_label = f"{players[0]['player_name']} • {players[1]['player_name']} • FACE TO FACE"
     else:
         live_label = f"{players[0]['player_name']} • {graphic_style.upper()}"
